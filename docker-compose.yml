@@ -1,0 +1,51 @@
+version: "3.9"
+
+services:
+
+  db:
+    image: mysql:8.0
+    container_name: mysql_tp3
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: tp3_db
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "3307:3306"
+    networks:
+      - tp3_network
+
+  web:
+    build: ./web
+    container_name: web_tp3
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+    networks:
+      - tp3_network
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 400M
+    volumes:
+      - ./web:/var/www/html
+
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins_tp3
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+    networks:
+      - tp3_network
+
+networks:
+  tp3_network:
+    driver: bridge
+
+volumes:
+  jenkins_home:
